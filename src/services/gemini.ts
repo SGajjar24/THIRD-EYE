@@ -2,7 +2,7 @@ import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { Message, AnalysisData, ReportType } from '../types';
 import { validateUrl } from '../utils/urlValidator';
 
-const apiKey = process.env.API_KEY || '';
+const apiKey = import.meta.env.VITE_GOOGLE_API_KEY || '';
 const ai = new GoogleGenAI({ apiKey });
 
 // Cache to prevent duplicate API calls for the same URL/ReportType combo
