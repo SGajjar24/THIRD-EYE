@@ -1,0 +1,269 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEEP DIVE FORENSIC REPORT: https://amazon.com</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root { 
+        --bg-dark: #020617; 
+        --card-bg: #0f172a; 
+        --border: #1e293b; 
+        --accent: #a855f7; 
+        --accent-bg: rgba(168, 85, 247, 0.1);
+        --success: #10b981; 
+        --danger: #ef4444; 
+        --warning: #f59e0b;
+        --text-main: #f8fafc; 
+        --text-muted: #94a3b8;
+    }
+    
+    * { box-sizing: border-box; }
+    
+    body { 
+        background-color: var(--bg-dark); 
+        color: var(--text-main); 
+        font-family: 'Inter', sans-serif; 
+        line-height: 1.6; 
+        margin: 0; 
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+        background-image: 
+            linear-gradient(rgba(2, 6, 23, 0.95), rgba(2, 6, 23, 0.95)),
+            linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .03) 25%, rgba(255, 255, 255, .03) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .03) 75%, rgba(255, 255, 255, .03) 76%, transparent 77%, transparent), 
+            linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .03) 25%, rgba(255, 255, 255, .03) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .03) 75%, rgba(255, 255, 255, .03) 76%, transparent 77%, transparent);
+        background-size: 50px 50px;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+    @media (max-width: 768px) {
+        .container { padding: 20px 15px; }
+        header { flex-direction: column; align-items: flex-start; gap: 20px; }
+        .grid-2, .grid-4 { grid-template-columns: 1fr !important; gap: 15px; }
+    }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-enter { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+
+    header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: flex-start; 
+        border-bottom: 1px solid var(--border); 
+        padding-bottom: 30px; 
+        margin-bottom: 40px; 
+        position: relative;
+    }
+    header::after {
+        content: ''; position: absolute; bottom: -1px; left: 0; width: 100px; height: 1px; background: var(--accent); box-shadow: 0 0 10px var(--accent);
+    }
+
+    .logo-section { display: flex; align-items: center; gap: 15px; }
+    .logo-icon { width: 48px; height: 48px; color: var(--accent); }
+    .brand-name { font-weight: 800; font-size: 24px; letter-spacing: -0.5px; line-height: 1; }
+    .brand-sub { font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 2px; margin-top: 4px; display: block; }
+    
+    .report-meta { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); }
+    .report-badge { 
+        display: inline-block; 
+        background: var(--accent-bg); 
+        color: var(--accent); 
+        padding: 6px 10px; 
+        border-radius: 4px; 
+        border: 1px solid var(--accent);
+        margin-bottom: 8px;
+        font-weight: 800;
+        font-size: 10px;
+        letter-spacing: 1px;
+    }
+
+    .card { 
+        background: var(--card-bg); 
+        border: 1px solid var(--border); 
+        border-radius: 12px; 
+        padding: 25px; 
+        margin-bottom: 25px; 
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    }
+    
+    h2 { 
+        color: var(--text-main); 
+        font-size: 16px; 
+        font-weight: 600; 
+        text-transform: uppercase; 
+        letter-spacing: 1px; 
+        margin-top: 0; 
+        margin-bottom: 20px; 
+        display: flex; 
+        align-items: center; 
+        gap: 10px; 
+    }
+    h2 svg { width: 18px; height: 18px; color: var(--accent); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+
+    .kv-item { margin-bottom: 5px; }
+    .kv-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600; letter-spacing: 0.5px; }
+    .kv-value { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #fff; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); display: block; word-break: break-all; }
+
+    .score-container { display: flex; align-items: center; gap: 15px; }
+    .score-circle { 
+        width: 60px; height: 60px; min-width: 60px;
+        border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center; 
+        font-weight: 800; font-size: 18px; 
+        border: 4px solid;
+    }
+    .score-high { border-color: var(--success); color: var(--success); box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+    .score-med { border-color: var(--warning); color: var(--warning); box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
+    .score-low { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 15px rgba(239, 68, 68, 0.2); }
+    
+    .flag-item { background: rgba(239, 68, 68, 0.1); border-left: 3px solid var(--danger); padding: 10px 15px; margin-bottom: 8px; font-size: 13px; color: #fca5a5; }
+    .check-item { background: rgba(16, 185, 129, 0.05); border-left: 3px solid var(--success); padding: 10px 15px; margin-bottom: 8px; font-size: 13px; color: #d1fae5; }
+    .warn-item { background: rgba(245, 158, 11, 0.1); border-left: 3px solid var(--warning); padding: 10px 15px; margin-bottom: 8px; font-size: 13px; color: #fcd34d; }
+    
+    .error-box { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 20px; border-radius: 8px; text-align: center; color: #fca5a5; font-family: 'JetBrains Mono'; }
+
+    .footer-section { margin-top: 60px; border-top: 1px solid var(--border); padding-top: 30px; font-size: 10px; color: var(--text-muted); text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- HEADER -->
+    <header class="animate-enter">
+        <div class="logo-section">
+            <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+            </svg>
+            <div>
+                <div class="brand-name">THIRD EYE</div>
+                <span class="brand-sub">Forensic Vision Lab</span>
+            </div>
+        </div>
+        <div class="report-meta">
+            <span class="report-badge">DEEP DIVE FORENSIC REPORT</span><br>
+            REF ID: 0EWRJ0RJ2<br>
+            DATE: December 10, 2025
+        </div>
+    </header>
+
+    <!-- CLIENT INFO -->
+    <div class="card animate-enter delay-1">
+        <h2>Target & Client Profile</h2>
+        <div class="grid-2">
+            <div>
+                <div class="kv-item"><span class="kv-label">Target URL</span><span class="kv-value" style="color: var(--accent)">https://amazon.com</span></div>
+                <div class="kv-item"><span class="kv-label">Analysis Date</span><span class="kv-value">December 10, 2025</span></div>
+            </div>
+            <div>
+                <div class="kv-item"><span class="kv-label">Prepared For</span><span class="kv-value">sam (Security Researcher)</span></div>
+                <div class="kv-item"><span class="kv-label">Recipient</span><span class="kv-value">sam@gmail.com</span></div>
+            </div>
+        </div>
+    </div>
+
+    
+        <!-- SUCCESS STATE -->
+        <div class="grid-2">
+            <div class="card animate-enter delay-2">
+                <h2>Security Risk Assessment</h2>
+                <div class="score-container">
+                    <div class="score-circle score-high">
+                        95
+                    </div>
+                    <div>
+                        <span class="kv-label">Vulnerability Posture</span>
+                        <span style="font-weight: bold; color: var(--success)">
+                            SECURE
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card animate-enter delay-2">
+                <h2>Content Origin Probability</h2>
+                <div style="margin-top: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold;">
+                        <span>Human</span>
+                        <span>88% Synthetic Detected</span>
+                    </div>
+                    <div style="width: 100%; height: 6px; background: #334155; border-radius: 3px; overflow: hidden; margin-top: 8px;">
+                        <div style="height: 100%; background: linear-gradient(90deg, var(--success), var(--danger)); width: 88%"></div>
+                    </div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">
+                        Product descriptions and reviews exhibit a blend of vendor-provided content and extensive user-generated contributions. Content quality is generally h...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card animate-enter delay-2">
+            <h2>System Architecture Map</h2>
+            <div class="grid-4">
+                <div class="kv-item"><span class="kv-label">Frontend</span><span class="kv-value">Extensive use of React, Next.js for Server-Side Rendering (SSR), and custom JavaScript frameworks. The frontend is built on a robust component library, optimized for performance, accessibility, and a consistent user experience across diverse devices and browsers.</span></div>
+                <div class="kv-item"><span class="kv-label">Backend</span><span class="kv-value">Highly customized microservices architecture leveraging AWS services (EC2, Lambda, DynamoDB, Aurora, S3, CloudFront, etc.), primarily Java (Spring Boot), C++, Go, and Python. This proprietary system is engineered for extreme scalability and resilience.</span></div>
+                <div class="kv-item"><span class="kv-label">Database</span><span class="kv-value">Distributed database architecture utilizing Amazon DynamoDB for NoSQL requirements, Amazon Aurora (PostgreSQL/MySQL compatible) for relational data, Amazon Redshift for data warehousing, and Amazon S3 for object storage and data lakes. This multi-database strategy supports diverse data models and extreme scale.</span></div>
+                <div class="kv-item"><span class="kv-label">Type</span><span class="kv-value">E-Commerce</span></div>
+            </div>
+        </div>
+
+        
+            <div class="card animate-enter delay-2">
+                <h2>SEO Forensic Analysis</h2>
+                <div class="grid-2">
+                    <div class="score-container">
+                        <div class="score-circle score-high">
+                            92
+                        </div>
+                        <div>
+                            <span class="kv-label">Search Visibility Health</span>
+                            <span style="font-weight: bold; font-size: 11px; color: var(--text-muted)">
+                                Technical crawlability & indexability metrics
+                            </span>
+                        </div>
+                    </div>
+                    <div>
+                         <span class="kv-label" style="margin-bottom: 8px;">Technical Flags</span>
+                         <div class="warn-item">⚡ Duplicate Content: While largely mitigated by canonical tags, the sheer volume of product variations and regional content can still present minor challenges for search engine indexation efficiency. Meta descriptions and titles are generally unique but can be templated for similar products.</div><div class="warn-item">⚡ Large Index Size: The vast number of pages can lead to crawl budget inefficiencies for less frequently updated content, despite sophisticated sitemap management and robots.txt directives. Server-Side Rendering (SSR) is extensively used to ensure content is crawlable and performant, but the sheer scale remains a factor.</div>
+                    </div>
+                </div>
+            </div>
+        
+
+        <div class="grid-2">
+            <div class="card animate-enter delay-2">
+                <h2 style="color: var(--danger);">Critical Vulnerabilities</h2>
+                <div class="flag-item">⚠️ Security Headers: Content-Security-Policy (CSP) is present but could be further hardened with stricter directives to mitigate advanced cross-site scripting (XSS) and data injection vulnerabilities, which are common vectors for CVEs in web applications.</div><div class="flag-item">⚠️ Third-Party Script Management: Extensive integration of third-party scripts introduces a supply chain risk. A compromise in a third-party dependency could lead to client-side data exfiltration or malicious code injection, a common source of web-related CVEs.</div><div class="flag-item">⚠️ Lack of Permissions-Policy: Absence of a Permissions-Policy (formerly Feature-Policy) allows all browser features by default, potentially exposing users to unnecessary API access or resource consumption if a sub-resource is compromised.</div>
+            </div>
+
+            <div class="card animate-enter delay-2">
+                <h2 style="color: var(--success);">System Hardening</h2>
+                <div class="check-item">💡 Implement a stricter Content-Security-Policy (CSP) with a comprehensive whitelist for all script, style, and resource origins to proactively prevent various injection attacks and reduce the attack surface.</div><div class="check-item">💡 Deploy a robust Permissions-Policy to explicitly control browser features and APIs accessible to the page and its embedded content, further enhancing user privacy and security.</div><div class="check-item">💡 Regularly audit third-party script integrity and dependencies to mitigate supply chain risks and prevent the introduction of known vulnerabilities (CVEs) through external components.</div><div class="check-item">💡 Optimize image delivery for next-gen formats (e.g., WebP, AVIF) more aggressively across all product listings to enhance page load performance and reduce bandwidth consumption.</div><div class="check-item">💡 Enhance accessibility features for specific user groups, ensuring full compliance with WCAG 2.1 AA standards across all dynamic content and interactive elements.</div>
+            </div>
+        </div>
+    
+
+    <!-- FOOTER -->
+    <div class="footer-section animate-enter delay-2">
+        <div style="max-width: 600px; margin: 0 auto;">
+            <strong>PASSIVE RECONNAISSANCE DISCLAIMER</strong><br>
+            This document is generated for educational and diagnostic purposes via the Third Eye Forensic Engine. It utilizes passive telemetry and AI-driven pattern recognition. It does not constitute a certified penetration test or legal compliance audit.
+            <br><br>
+            © 2025 Third Eye. All Rights Reserved.
+        </div>
+    </div>
+
+  </div>
+</body>
+</html>
+      

@@ -1,0 +1,269 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEEP DIVE FORENSIC REPORT: https://deodap.com</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root { 
+        --bg-dark: #020617; 
+        --card-bg: #0f172a; 
+        --border: #1e293b; 
+        --accent: #a855f7; 
+        --accent-bg: rgba(168, 85, 247, 0.1);
+        --success: #10b981; 
+        --danger: #ef4444; 
+        --warning: #f59e0b;
+        --text-main: #f8fafc; 
+        --text-muted: #94a3b8;
+    }
+    
+    * { box-sizing: border-box; }
+    
+    body { 
+        background-color: var(--bg-dark); 
+        color: var(--text-main); 
+        font-family: 'Inter', sans-serif; 
+        line-height: 1.6; 
+        margin: 0; 
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+        background-image: 
+            linear-gradient(rgba(2, 6, 23, 0.95), rgba(2, 6, 23, 0.95)),
+            linear-gradient(0deg, transparent 24%, rgba(255, 255, 255, .03) 25%, rgba(255, 255, 255, .03) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .03) 75%, rgba(255, 255, 255, .03) 76%, transparent 77%, transparent), 
+            linear-gradient(90deg, transparent 24%, rgba(255, 255, 255, .03) 25%, rgba(255, 255, 255, .03) 26%, transparent 27%, transparent 74%, rgba(255, 255, 255, .03) 75%, rgba(255, 255, 255, .03) 76%, transparent 77%, transparent);
+        background-size: 50px 50px;
+    }
+
+    .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+
+    @media (max-width: 768px) {
+        .container { padding: 20px 15px; }
+        header { flex-direction: column; align-items: flex-start; gap: 20px; }
+        .grid-2, .grid-4 { grid-template-columns: 1fr !important; gap: 15px; }
+    }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-enter { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+
+    header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: flex-start; 
+        border-bottom: 1px solid var(--border); 
+        padding-bottom: 30px; 
+        margin-bottom: 40px; 
+        position: relative;
+    }
+    header::after {
+        content: ''; position: absolute; bottom: -1px; left: 0; width: 100px; height: 1px; background: var(--accent); box-shadow: 0 0 10px var(--accent);
+    }
+
+    .logo-section { display: flex; align-items: center; gap: 15px; }
+    .logo-icon { width: 48px; height: 48px; color: var(--accent); }
+    .brand-name { font-weight: 800; font-size: 24px; letter-spacing: -0.5px; line-height: 1; }
+    .brand-sub { font-size: 10px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 2px; margin-top: 4px; display: block; }
+    
+    .report-meta { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-muted); }
+    .report-badge { 
+        display: inline-block; 
+        background: var(--accent-bg); 
+        color: var(--accent); 
+        padding: 6px 10px; 
+        border-radius: 4px; 
+        border: 1px solid var(--accent);
+        margin-bottom: 8px;
+        font-weight: 800;
+        font-size: 10px;
+        letter-spacing: 1px;
+    }
+
+    .card { 
+        background: var(--card-bg); 
+        border: 1px solid var(--border); 
+        border-radius: 12px; 
+        padding: 25px; 
+        margin-bottom: 25px; 
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    }
+    
+    h2 { 
+        color: var(--text-main); 
+        font-size: 16px; 
+        font-weight: 600; 
+        text-transform: uppercase; 
+        letter-spacing: 1px; 
+        margin-top: 0; 
+        margin-bottom: 20px; 
+        display: flex; 
+        align-items: center; 
+        gap: 10px; 
+    }
+    h2 svg { width: 18px; height: 18px; color: var(--accent); }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; }
+
+    .kv-item { margin-bottom: 5px; }
+    .kv-label { font-size: 11px; text-transform: uppercase; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600; letter-spacing: 0.5px; }
+    .kv-value { font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #fff; background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05); display: block; word-break: break-all; }
+
+    .score-container { display: flex; align-items: center; gap: 15px; }
+    .score-circle { 
+        width: 60px; height: 60px; min-width: 60px;
+        border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center; 
+        font-weight: 800; font-size: 18px; 
+        border: 4px solid;
+    }
+    .score-high { border-color: var(--success); color: var(--success); box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+    .score-med { border-color: var(--warning); color: var(--warning); box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
+    .score-low { border-color: var(--danger); color: var(--danger); box-shadow: 0 0 15px rgba(239, 68, 68, 0.2); }
+    
+    .flag-item { background: rgba(239, 68, 68, 0.1); border-left: 3px solid var(--danger); padding: 10px 15px; margin-bottom: 8px; font-size: 13px; color: #fca5a5; }
+    .check-item { background: rgba(16, 185, 129, 0.05); border-left: 3px solid var(--success); padding: 10px 15px; margin-bottom: 8px; font-size: 13px; color: #d1fae5; }
+    .warn-item { background: rgba(245, 158, 11, 0.1); border-left: 3px solid var(--warning); padding: 10px 15px; margin-bottom: 8px; font-size: 13px; color: #fcd34d; }
+    
+    .error-box { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); padding: 20px; border-radius: 8px; text-align: center; color: #fca5a5; font-family: 'JetBrains Mono'; }
+
+    .footer-section { margin-top: 60px; border-top: 1px solid var(--border); padding-top: 30px; font-size: 10px; color: var(--text-muted); text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- HEADER -->
+    <header class="animate-enter">
+        <div class="logo-section">
+            <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                <circle cx="12" cy="12" r="3" />
+            </svg>
+            <div>
+                <div class="brand-name">THIRD EYE</div>
+                <span class="brand-sub">Forensic Vision Lab</span>
+            </div>
+        </div>
+        <div class="report-meta">
+            <span class="report-badge">DEEP DIVE FORENSIC REPORT</span><br>
+            REF ID: NQ87H39AU<br>
+            DATE: December 10, 2025
+        </div>
+    </header>
+
+    <!-- CLIENT INFO -->
+    <div class="card animate-enter delay-1">
+        <h2>Target & Client Profile</h2>
+        <div class="grid-2">
+            <div>
+                <div class="kv-item"><span class="kv-label">Target URL</span><span class="kv-value" style="color: var(--accent)">https://deodap.com</span></div>
+                <div class="kv-item"><span class="kv-label">Analysis Date</span><span class="kv-value">December 10, 2025</span></div>
+            </div>
+            <div>
+                <div class="kv-item"><span class="kv-label">Prepared For</span><span class="kv-value">rama (Developer)</span></div>
+                <div class="kv-item"><span class="kv-label">Recipient</span><span class="kv-value">rmas@ekme.com</span></div>
+            </div>
+        </div>
+    </div>
+
+    
+        <!-- SUCCESS STATE -->
+        <div class="grid-2">
+            <div class="card animate-enter delay-2">
+                <h2>Security Risk Assessment</h2>
+                <div class="score-container">
+                    <div class="score-circle score-low">
+                        50
+                    </div>
+                    <div>
+                        <span class="kv-label">Vulnerability Posture</span>
+                        <span style="font-weight: bold; color: var(--danger)">
+                            CRITICAL RISK
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card animate-enter delay-2">
+                <h2>Content Origin Probability</h2>
+                <div style="margin-top: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; font-weight: bold;">
+                        <span>Human</span>
+                        <span>80% Synthetic Detected</span>
+                    </div>
+                    <div style="width: 100%; height: 6px; background: #334155; border-radius: 3px; overflow: hidden; margin-top: 8px;">
+                        <div style="height: 100%; background: linear-gradient(90deg, var(--success), var(--danger)); width: 80%"></div>
+                    </div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">
+                        Content appears to be human-generated, featuring detailed product descriptions and clear informational text. No discernible patterns indicative of AI-...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card animate-enter delay-2">
+            <h2>System Architecture Map</h2>
+            <div class="grid-4">
+                <div class="kv-item"><span class="kv-label">Frontend</span><span class="kv-value">jQuery 3.7.1, Bootstrap 5.3.0, HTML5, CSS3</span></div>
+                <div class="kv-item"><span class="kv-label">Backend</span><span class="kv-value">PHP 8.1.27, CodeIgniter (inferred), Cloudflare (CDN/Proxy)</span></div>
+                <div class="kv-item"><span class="kv-label">Database</span><span class="kv-value">MySQL (inferred based on PHP/CodeIgniter stack)</span></div>
+                <div class="kv-item"><span class="kv-label">Type</span><span class="kv-value">E-Commerce</span></div>
+            </div>
+        </div>
+
+        
+            <div class="card animate-enter delay-2">
+                <h2>SEO Forensic Analysis</h2>
+                <div class="grid-2">
+                    <div class="score-container">
+                        <div class="score-circle score-med">
+                            65
+                        </div>
+                        <div>
+                            <span class="kv-label">Search Visibility Health</span>
+                            <span style="font-weight: bold; font-size: 11px; color: var(--text-muted)">
+                                Technical crawlability & indexability metrics
+                            </span>
+                        </div>
+                    </div>
+                    <div>
+                         <span class="kv-label" style="margin-bottom: 8px;">Technical Flags</span>
+                         <div class="warn-item">⚡ Missing Structured Data: Critical Schema.org markup for product information is absent, limiting rich snippet potential in search results.</div><div class="warn-item">⚡ Inconsistent Meta Descriptions: While present, meta descriptions are often generic or truncated, potentially reducing search engine click-through rates.</div><div class="warn-item">⚡ Image Optimization Deficiencies: Images are not consistently optimized for size and format, impacting page load performance.</div>
+                    </div>
+                </div>
+            </div>
+        
+
+        <div class="grid-2">
+            <div class="card animate-enter delay-2">
+                <h2 style="color: var(--danger);">Critical Vulnerabilities</h2>
+                <div class="flag-item">⚠️ Content Security Policy (CSP) Missing: Absence of a robust CSP allows for various injection attacks, including Cross-Site Scripting (XSS).</div><div class="flag-item">⚠️ Insecure Session Cookies: PHPSESSID and ci_session cookies lack HttpOnly, Secure, and SameSite flags. This exposes session data to XSS attacks and makes the application vulnerable to Cross-Site Request Forgery (CSRF).</div><div class="flag-item">⚠️ PHP Version Nearing End-of-Life: PHP 8.1.27 is approaching its end-of-life for security support (November 2024), posing future security risks if not upgraded.</div><div class="flag-item">⚠️ Lack of Structured Data Markup: Absence of Schema.org markup (e.g., Product, Offer) on product pages hinders search engine understanding and rich snippet display.</div>
+            </div>
+
+            <div class="card animate-enter delay-2">
+                <h2 style="color: var(--success);">System Hardening</h2>
+                <div class="check-item">💡 Implement a comprehensive Content Security Policy (CSP) to mitigate XSS and other injection vulnerabilities.</div><div class="check-item">💡 Configure all session cookies with HttpOnly, Secure, and SameSite=Lax/Strict flags to enhance session security.</div><div class="check-item">💡 Upgrade the PHP environment to a currently supported version (PHP 8.2 or 8.3) to ensure ongoing security patches and performance benefits.</div><div class="check-item">💡 Integrate Schema.org markup (Product, Offer, BreadcrumbList) to improve search engine visibility and rich snippet eligibility.</div><div class="check-item">💡 Optimize image assets for web delivery, including compression, serving in modern formats (e.g., WebP), and implementing lazy loading.</div><div class="check-item">💡 Review and enhance meta descriptions across all pages to be unique, compelling, and keyword-rich for improved click-through rates.</div><div class="check-item">💡 Implement rate limiting on authentication and checkout endpoints to prevent brute-force attacks and abuse.</div><div class="check-item">💡 Strengthen input validation and sanitization across all user-facing forms to prevent various injection attacks.</div>
+            </div>
+        </div>
+    
+
+    <!-- FOOTER -->
+    <div class="footer-section animate-enter delay-2">
+        <div style="max-width: 600px; margin: 0 auto;">
+            <strong>PASSIVE RECONNAISSANCE DISCLAIMER</strong><br>
+            This document is generated for educational and diagnostic purposes via the Third Eye Forensic Engine. It utilizes passive telemetry and AI-driven pattern recognition. It does not constitute a certified penetration test or legal compliance audit.
+            <br><br>
+            © 2025 Third Eye. All Rights Reserved.
+        </div>
+    </div>
+
+  </div>
+</body>
+</html>
+      
