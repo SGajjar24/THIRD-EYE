@@ -78,6 +78,9 @@ THIRD-EYE/
 **Swetang Gajjar**
 *Founder & Principal Architect, Archi-Tech Platform*
 
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue.svg)](https://www.linkedin.com/in/gajjarswetang/)
+[![Email](https://img.shields.io/badge/Email-Contact-red.svg)](mailto:swetangg@gmail.com)
+
 Empowering secure and authentic digital experiences through innovative AI implementation.
 
 ---
