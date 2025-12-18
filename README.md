@@ -21,6 +21,7 @@ Watch the project in action: [THIRD EYE Video Demo](https://youtu.be/veSYGxprbis
 
 ## Repository Structure
 
+- `/src`: Core application source code (React/TypeScript/Vite).
 - `/reports`: Detailed HTML security and content audit reports.
 - `/media`: Video demonstrations and visual assets.
 - `/docs`: Technical documentation and PDF reports.

@@ -1,0 +1,7 @@
+{
+  "name": "Third Eye",
+  "description": "Third Eye: A forensic web architecture analysis tool that sees what others miss. Visualizes backend logic, guest session persistence, and hidden vulnerabilities using Gemini 3 Pro.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
